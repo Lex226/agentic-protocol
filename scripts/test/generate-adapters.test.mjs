@@ -128,3 +128,51 @@ test('default source SHA is the protocol checkout HEAD', () => {
   const text = fs.readFileSync(path.join(target, '.cursor', 'rules', 'agentic.mdc'), 'utf8');
   assert.match(text, new RegExp(`source_sha: ${head}`));
 });
+
+function linkPath(target, linkPath) {
+  const type = process.platform === 'win32' ? 'junction' : 'dir';
+  fs.symlinkSync(target, linkPath, type);
+}
+
+test('refuses a link at the adapter output and leaves the marker and other adapters', () => {
+  const target = tempDir('out-link');
+  const baseArgs = ['--protocol-root', root, '--target', target];
+  assert.equal(run(['--write', ...baseArgs, '--source-sha', sha]).status, 0);
+  const sibling = fs.readFileSync(path.join(target, '.agentic', 'reviewer-context.md'));
+  const handoff = fs.readFileSync(path.join(target, '.agentic', 'handoff', 'executor-to-reviewer.md'));
+  const outside = tempDir('out-marker');
+  const marker = path.join(outside, 'marker.txt');
+  fs.writeFileSync(marker, 'SAFE-MARKER');
+  const rule = path.join(target, '.cursor', 'rules', 'agentic.mdc');
+  fs.rmSync(rule);
+  if (process.platform === 'win32') {
+    linkPath(outside, rule);
+  } else {
+    fs.symlinkSync(marker, rule);
+  }
+  const again = run(['--write', ...baseArgs, '--source-sha', 'b'.repeat(40)]);
+  assert.equal(again.status, 3, again.stderr);
+  assert.match(again.stderr, /no files were written/);
+  assert.equal(fs.readFileSync(marker, 'utf8'), 'SAFE-MARKER');
+  assert.deepEqual(fs.readFileSync(path.join(target, '.agentic', 'reviewer-context.md')), sibling);
+  assert.deepEqual(fs.readFileSync(path.join(target, '.agentic', 'handoff', 'executor-to-reviewer.md')), handoff);
+  assert.equal(fs.readdirSync(outside).some((name) => name === 'agentic.mdc'), false);
+});
+
+test('refuses a linked parent directory of the adapter output', () => {
+  const target = tempDir('parent-link');
+  const baseArgs = ['--protocol-root', root, '--target', target];
+  assert.equal(run(['--write', ...baseArgs, '--source-sha', sha]).status, 0);
+  const sibling = fs.readFileSync(path.join(target, '.agentic', 'reviewer-context.md'));
+  fs.rmSync(path.join(target, '.cursor'), { recursive: true });
+  const outside = tempDir('parent-marker');
+  const marker = path.join(outside, 'marker.txt');
+  fs.writeFileSync(marker, 'SAFE-MARKER');
+  linkPath(outside, path.join(target, '.cursor'));
+  const again = run(['--write', ...baseArgs, '--source-sha', 'b'.repeat(40)]);
+  assert.equal(again.status, 3, again.stderr);
+  assert.match(again.stderr, /no files were written/);
+  assert.equal(fs.readFileSync(marker, 'utf8'), 'SAFE-MARKER');
+  assert.deepEqual(fs.readFileSync(path.join(target, '.agentic', 'reviewer-context.md')), sibling);
+  assert.equal(fs.existsSync(path.join(outside, 'rules', 'agentic.mdc')), false);
+});

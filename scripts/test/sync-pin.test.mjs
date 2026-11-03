@@ -246,3 +246,55 @@ test('sync stops when an adapter file is user-owned', () => {
   assert.equal(readConfig(consumer).protocol_ref, shaA);
   assert.equal(generateScript.length > 0, true);
 });
+
+function linkDirectory(target, linkPath) {
+  fs.symlinkSync(target, linkPath, process.platform === 'win32' ? 'junction' : 'dir');
+}
+
+test('sync refuses a linked protocol directory and does not move the pin', () => {
+  const upstream = tempDir('dir-link-up');
+  writeProtocol(upstream, 'rule A');
+  git(upstream, ['init', '-b', 'main']);
+  git(upstream, ['add', '.']);
+  git(upstream, ['commit', '-m', 'A']);
+  const shaA = git(upstream, ['rev-parse', 'HEAD']).trim();
+  writeProtocol(upstream, 'rule B');
+  git(upstream, ['add', '.']);
+  git(upstream, ['commit', '-m', 'B']);
+  const shaB = git(upstream, ['rev-parse', 'HEAD']).trim();
+
+  const consumer = tempDir('dir-link-consumer');
+  git(consumer, ['init', '-b', 'main']);
+  fs.mkdirSync(path.join(consumer, '.agentic', 'vendor'), { recursive: true });
+  git(consumer, ['clone', upstream, '.agentic/vendor/protocol']);
+  git(path.join(consumer, '.agentic', 'vendor', 'protocol'), ['checkout', shaA]);
+  git(consumer, ['add', '.agentic/vendor/protocol']);
+  writeConfig(consumer, shaA);
+
+  const outside = tempDir('dir-link-outside');
+  const marker = path.join(outside, 'marker.txt');
+  fs.writeFileSync(marker, 'SAFE-MARKER');
+  fs.mkdirSync(path.join(outside, 'linked-protocol'));
+  fs.writeFileSync(path.join(outside, 'linked-protocol', 'version.json'), '{"protocol_version":"0.1.0"}\n');
+  fs.writeFileSync(path.join(outside, 'linked-protocol', '00-roles.md'), '# Roles\n\nOUTSIDE\n');
+  const data = tempDir('dir-link-data');
+  writeProtocol(data, 'rule B');
+  fs.rmSync(path.join(data, 'protocol'), { recursive: true });
+  linkDirectory(path.join(outside, 'linked-protocol'), path.join(data, 'protocol'));
+
+  const result = runSync([
+    '--write',
+    '--upstream-sha',
+    shaB,
+    '--protocol-data',
+    data,
+    '--target',
+    consumer,
+  ]);
+  assert.equal(result.status, 3, result.stdout);
+  assert.match(result.stderr, /refusing symlink/);
+  assert.equal(readConfig(consumer).protocol_ref, shaA);
+  assert.equal(fs.readFileSync(marker, 'utf8'), 'SAFE-MARKER');
+  assert.equal(fs.existsSync(path.join(consumer, '.cursor', 'rules', 'agentic.mdc')), false);
+  assert.equal(fs.existsSync(path.join(consumer, '.agentic', 'reviewer-context.md')), false);
+});
