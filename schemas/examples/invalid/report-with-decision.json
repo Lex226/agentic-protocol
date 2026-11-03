@@ -1,0 +1,18 @@
+{
+  "task_id": "agentic-protocol-bootstrap",
+  "repository": "Lex226/agentic-protocol",
+  "base_sha": "bd86aab7788c16dde9ae4b656def699f1d2f155b",
+  "head_sha": "0123456789abcdef0123456789abcdef01234567",
+  "protocol_version": "0.1.0",
+  "commands": [
+    {
+      "command": "npm test",
+      "exit_code": 0
+    }
+  ],
+  "evidence": [],
+  "changed_files": [],
+  "limitations": [],
+  "unchecked": [],
+  "decision": "READY"
+}

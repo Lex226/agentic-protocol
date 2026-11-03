@@ -1,0 +1,19 @@
+{
+  "task_id": "agentic-protocol-bootstrap",
+  "scope": "Add the shared protocol and connect it to the consumer repository without merging.",
+  "allowed_paths": [
+    "protocol/",
+    "schemas/",
+    "templates/",
+    "scripts/",
+    "docs/",
+    ".github/workflows/ci.yml"
+  ],
+  "forbidden_paths": [
+    "src/"
+  ],
+  "acceptance_criteria": [
+    "Schemas accept the valid examples and reject a not_checked result of pass.",
+    "The adapter generator is deterministic and stops on an unmarked existing file."
+  ]
+}

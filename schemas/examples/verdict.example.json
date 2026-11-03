@@ -1,0 +1,12 @@
+{
+  "task_id": "agentic-protocol-bootstrap",
+  "reviewed_head_sha": "0123456789abcdef0123456789abcdef01234567",
+  "decision": "FIX",
+  "issuer": "reviewer",
+  "notes": [
+    "Example verdict only. READY would apply solely to reviewed_head_sha."
+  ],
+  "merge_conditions": [
+    "The pull request head SHA still equals reviewed_head_sha."
+  ]
+}

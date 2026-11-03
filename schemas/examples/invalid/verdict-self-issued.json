@@ -1,0 +1,8 @@
+{
+  "task_id": "agentic-protocol-bootstrap",
+  "reviewed_head_sha": "0123456789abcdef0123456789abcdef01234567",
+  "decision": "READY",
+  "issuer": "executor",
+  "notes": [],
+  "merge_conditions": []
+}
