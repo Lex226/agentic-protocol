@@ -1,0 +1,43 @@
+{
+  "task_id": "agentic-protocol-bootstrap",
+  "repository": "Lex226/agentic-protocol",
+  "base_sha": "bd86aab7788c16dde9ae4b656def699f1d2f155b",
+  "head_sha": "0123456789abcdef0123456789abcdef01234567",
+  "protocol_version": "0.1.0",
+  "commands": [
+    {
+      "command": "npm test",
+      "exit_code": 0,
+      "cwd": "."
+    }
+  ],
+  "evidence": [
+    {
+      "id": "npm-test",
+      "status": "instrumented",
+      "result": "pass",
+      "detail": "npm test exited 0."
+    },
+    {
+      "id": "boundary-review",
+      "status": "human_confirmed",
+      "result": "pass",
+      "detail": "A person confirmed the path boundary."
+    },
+    {
+      "id": "browser-walkthrough",
+      "status": "not_checked",
+      "detail": "No browser session was run."
+    }
+  ],
+  "changed_files": [
+    "protocol/version.json",
+    "scripts/generate-adapters.mjs"
+  ],
+  "limitations": [
+    "This example records the shape of a report. It is not the result of a specific run."
+  ],
+  "unchecked": [
+    "browser-walkthrough"
+  ]
+}

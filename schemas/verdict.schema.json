@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "agentic-protocol://schemas/verdict.schema.json",
+  "title": "Reviewer verdict",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "task_id",
+    "reviewed_head_sha",
+    "decision",
+    "issuer",
+    "notes",
+    "merge_conditions"
+  ],
+  "properties": {
+    "task_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "reviewed_head_sha": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "decision": {
+      "enum": ["READY", "FIX", "BLOCK"]
+    },
+    "issuer": {
+      "const": "reviewer"
+    },
+    "notes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "merge_conditions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}
