@@ -5,6 +5,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { test } from 'node:test';
 import { fileURLToPath } from 'node:url';
+import { testGitEnv } from '../helpers/git-env.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 const script = path.join(root, 'scripts', 'generate-adapters.mjs');
@@ -113,7 +114,7 @@ test('default source SHA is the protocol checkout HEAD', () => {
   fs.writeFileSync(path.join(protocol, 'templates', 'report.md'), '# Report\n');
   fs.writeFileSync(path.join(protocol, 'templates', 'verdict.md'), '# Verdict\n');
   const git = (args) => {
-    const result = spawnSync('git', args, { cwd: protocol, encoding: 'utf8' });
+    const result = spawnSync('git', args, { cwd: protocol, encoding: 'utf8', env: testGitEnv });
     assert.equal(result.status, 0, result.stderr);
     return result.stdout;
   };

@@ -5,6 +5,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { test } from 'node:test';
 import { fileURLToPath } from 'node:url';
+import { testGitEnv } from '../helpers/git-env.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 const verifyScript = path.join(root, 'scripts', 'verify-pin.mjs');
@@ -15,7 +16,7 @@ function tempDir(name) {
 }
 
 function git(cwd, args) {
-  const result = spawnSync('git', args, { cwd, encoding: 'utf8' });
+  const result = spawnSync('git', args, { cwd, encoding: 'utf8', env: testGitEnv });
   assert.equal(result.status, 0, `git ${args.join(' ')}\n${result.stderr}`);
   return result.stdout;
 }
