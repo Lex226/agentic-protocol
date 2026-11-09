@@ -1,0 +1,52 @@
+name: protocol-check
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check version.json and CHANGELOG
+        shell: bash
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          set -euo pipefail
+          VER="$(python3 - <<'PY'
+          import json, re, sys
+          with open("protocol/version.json", encoding="utf-8") as f:
+              data = json.load(f)
+          if not isinstance(data, dict) or set(data) != {"protocol_version"}:
+              sys.exit("version.json must contain only protocol_version")
+          ver = data["protocol_version"]
+          if not isinstance(ver, str) or re.fullmatch(r"\d+\.\d+\.\d+(-[0-9A-Za-z.]+)?", ver) is None:
+              sys.exit(r"version does not match ^\d+\.\d+\.\d+(-[0-9A-Za-z.]+)?$")
+          print(ver)
+          PY
+          )"
+          if ! grep -F -q -x "## [${VER}]" CHANGELOG.md; then
+            echo "CHANGELOG.md has no section ## [${VER}]"
+            exit 1
+          fi
+          BASE_VER="$(git show "origin/${BASE_REF}:protocol/version.json" | python3 -c 'import json,sys; print(json.load(sys.stdin)["protocol_version"])')"
+          if [ "${VER}" != "${BASE_VER}" ]; then
+            tags="$(git ls-remote --tags origin "refs/tags/v${VER}")"
+            if [ -n "${tags}" ]; then
+              echo "tag v${VER} already exists"
+              exit 1
+            fi
+            echo "version changed ${BASE_VER} -> ${VER}; tag v${VER} is absent"
+          else
+            echo "version unchanged (${VER})"
+          fi
