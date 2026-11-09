@@ -32,8 +32,13 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           EVENT_NAME: ${{ github.event_name }}
           INPUT_DRY_RUN: ${{ inputs.dry_run }}
+          GITHUB_REF: ${{ github.ref }}
         run: |
           set -euo pipefail
+          if [ "${GITHUB_REF}" != "refs/heads/main" ]; then
+            echo "release only from main"
+            exit 1
+          fi
           VER="$(python3 - <<'PY'
           import json, re, sys
           with open("protocol/version.json", encoding="utf-8") as f:
