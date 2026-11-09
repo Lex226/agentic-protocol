@@ -1,7 +1,9 @@
-#Requires -Version 5.1
+﻿#Requires -Version 5.1
 <#
 .SYNOPSIS
   Collect a markdown verifier pack on stdout (does not write into the repo).
+  Adds a sessions/ section for branch, staged, unstaged, and untracked files.
+  An empty sessions list prints a notice and is not an error.
 .PARAMETER Issue
   Issue number (required unless -TaskCardPath is set).
   With a GitHub origin, gh must be installed and authenticated, the issue title and body are included in the pack, and a gh failure fails collection. Without a GitHub origin, gh is not called and the scope section contains a stub.
@@ -39,6 +41,20 @@ function Invoke-GitLines {
         return @($out)
     } finally {
         $ErrorActionPreference = $prev
+    }
+}
+
+function Add-NameStatusPaths {
+    param(
+        [string[]]$Lines,
+        [System.Collections.Generic.HashSet[string]]$Paths
+    )
+    foreach ($line in $Lines) {
+        if ([string]::IsNullOrWhiteSpace($line)) { continue }
+        $parts = $line.Split([char]9)
+        if ($parts.Length -lt 2) { continue }
+        $path = $parts[$parts.Length - 1].Trim()
+        if ($path) { [void]$Paths.Add($path) }
     }
 }
 
@@ -137,6 +153,43 @@ $card = ($chunks -join "`n`n")
 $nameStatusText = if ($nameStatus.Count -eq 0) { '(empty)' } else { ($nameStatus -join "`n") }
 $porcelainText = if ($porcelain.Count -eq 0) { '(empty)' } else { ($porcelain -join "`n") }
 
+$sessionSet = New-Object 'System.Collections.Generic.HashSet[string]' ([StringComparer]::Ordinal)
+Add-NameStatusPaths -Lines @(Invoke-GitLines diff --name-status "${OriginMain}...HEAD" -- sessions/) -Paths $sessionSet
+Add-NameStatusPaths -Lines @(Invoke-GitLines diff --cached --name-status -- sessions/) -Paths $sessionSet
+Add-NameStatusPaths -Lines @(Invoke-GitLines diff --name-status -- sessions/) -Paths $sessionSet
+foreach ($line in @(Invoke-GitLines ls-files --others --exclude-standard -- sessions/)) {
+    if (-not [string]::IsNullOrWhiteSpace($line)) {
+        [void]$sessionSet.Add($line.Trim())
+    }
+}
+$sessionPaths = New-Object 'System.Collections.Generic.List[string]'
+foreach ($path in $sessionSet) { [void]$sessionPaths.Add($path) }
+$sessionPaths.Sort([StringComparer]::Ordinal)
+$sessionsPathsText = if ($sessionPaths.Count -eq 0) { '(none)' } else { ($sessionPaths -join ', ') }
+
+if ($sessionPaths.Count -eq 0) {
+    $sessionsBody = 'снимок сессии не найден'
+} else {
+    $blocks = New-Object System.Collections.Generic.List[string]
+    $repoRoot = (Get-Location).Path
+    foreach ($rel in $sessionPaths) {
+        $relNative = $rel.Replace('/', [System.IO.Path]::DirectorySeparatorChar)
+        $full = Join-Path $repoRoot $relNative
+        if (Test-Path -LiteralPath $full) {
+            $text = Get-Content -LiteralPath $full -Raw -Encoding UTF8
+            if ($null -eq $text) { $text = '' }
+            [void]$blocks.Add("### $rel`n$text")
+        } else {
+            [void]$blocks.Add("### $rel`nфайл удалён в рабочем дереве")
+        }
+    }
+    $sessionsBody = ($blocks -join "`n`n")
+}
+$sessionsBytes = [System.Text.Encoding]::UTF8.GetByteCount($sessionsBody)
+if ($sessionsBytes -gt $MaxDiffBytes) {
+    $sessionsBody = "(warning: sessions section is $sessionsBytes bytes > limit $MaxDiffBytes; text is not truncated)`n" + $sessionsBody
+}
+
 @"
 # Verifier pack
 - branch: $branch
@@ -145,12 +198,17 @@ $porcelainText = if ($porcelain.Count -eq 0) { '(empty)' } else { ($porcelain -j
 - name_status_count: $($nameStatus.Count)
 - has_unstaged_changes: $hasUnstaged
 - diff_mode: $diffMode
+- sessions_count: $($sessionPaths.Count)
+- sessions_paths: $sessionsPathsText
 
 ## name-status
 $nameStatusText
 
 ## status-porcelain
 $porcelainText
+
+## sessions
+$sessionsBody
 
 ## task-card / issue scope
 $card
