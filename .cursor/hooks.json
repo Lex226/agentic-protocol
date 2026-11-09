@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "hooks": {
+    "beforeShellExecution": [
+      {
+        "command": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/hooks/guard-git.ps1",
+        "failClosed": true
+      }
+    ]
+  }
+}
