@@ -1,0 +1,81 @@
+name: release
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - protocol/version.json
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: Print the gh release command and do not create the release
+        type: boolean
+        default: true
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Create release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EVENT_NAME: ${{ github.event_name }}
+          INPUT_DRY_RUN: ${{ inputs.dry_run }}
+        run: |
+          set -euo pipefail
+          VER="$(python3 - <<'PY'
+          import json, re, sys
+          with open("protocol/version.json", encoding="utf-8") as f:
+              data = json.load(f)
+          ver = data["protocol_version"]
+          if not isinstance(ver, str) or re.fullmatch(r"\d+\.\d+\.\d+(-[0-9A-Za-z.]+)?", ver) is None:
+              sys.exit(r"version does not match ^\d+\.\d+\.\d+(-[0-9A-Za-z.]+)?$")
+          print(ver)
+          PY
+          )"
+          tags="$(git ls-remote --tags origin "refs/tags/v${VER}")"
+          if [ -n "${tags}" ]; then
+            echo "already released"
+            exit 0
+          fi
+          if ! awk -v ver="${VER}" '
+            $0 == "## [" ver "]" { found = 1; next }
+            /^## \[/ { if (found) exit }
+            found { print }
+            END { if (!found) exit 1 }
+          ' CHANGELOG.md > notes.md; then
+            echo "CHANGELOG.md has no section ## [${VER}]"
+            exit 1
+          fi
+          if [ ! -s notes.md ]; then
+            echo "CHANGELOG section ## [${VER}] is empty"
+            exit 1
+          fi
+          PRERELEASE=""
+          case "${VER}" in
+            *-*) PRERELEASE="--prerelease" ;;
+          esac
+          DRY="false"
+          if [ "${EVENT_NAME}" = "workflow_dispatch" ] && [ "${INPUT_DRY_RUN}" = "true" ]; then
+            DRY="true"
+          fi
+          if [ "${DRY}" = "true" ]; then
+            echo "gh release create \"v${VER}\" --target \"${GITHUB_SHA}\" --title \"v${VER}\" --notes-file notes.md${PRERELEASE:+ ${PRERELEASE}}"
+            exit 0
+          fi
+          if [ -n "${PRERELEASE}" ]; then
+            gh release create "v${VER}" --target "${GITHUB_SHA}" --title "v${VER}" --notes-file notes.md --prerelease
+          else
+            gh release create "v${VER}" --target "${GITHUB_SHA}" --title "v${VER}" --notes-file notes.md
+          fi
