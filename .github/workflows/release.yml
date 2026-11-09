@@ -32,10 +32,10 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           EVENT_NAME: ${{ github.event_name }}
           INPUT_DRY_RUN: ${{ inputs.dry_run }}
-          GITHUB_REF: ${{ github.ref }}
+          REF: ${{ github.ref }}
         run: |
           set -euo pipefail
-          if [ "${GITHUB_REF}" != "refs/heads/main" ]; then
+          if [ "${REF}" != "refs/heads/main" ]; then
             echo "release only from main"
             exit 1
           fi
