@@ -23,9 +23,15 @@ You are the project **verifier** subagent for this repository.
 
 The parent must pass a **Verifier pack** (from `scripts/verify/collect-verifier-pack.ps1` or equivalent) containing at least:
 
-- `branch`, `origin_main_sha`, `name_status_count`, `has_unstaged_changes`, `diff_mode`
-- sections `name-status`, `status-porcelain`, `diff` (full or truncated note)
+- `branch`, `origin_main_sha`, `name_status_count`, `has_unstaged_changes`, `diff_mode`, `sessions_count`, `sessions_paths`
+- sections `name-status`, `status-porcelain`, `sessions`, `diff` (full or truncated note)
 - Issue and/or task-card scope (`issue: #N` and/or `task-card:` with real criteria)
+
+Repeat `sessions_paths` exactly as in the pack (`(none)` or paths joined by `, `).
+
+The scope line (`issue:` / `task-card:`) is not an Input fingerprint field. Fingerprint field order is `branch`, `origin_main_sha`, `name_status_count`, `has_unstaged_changes`, `diff_mode`, `sessions_count`, `sessions_paths`.
+
+If the pack has neither `sessions_count` nor `sessions_paths`, it came from an old collector. Do not use a hard stop: write `<отсутствует в пакете>` for both fields and add ⚠️ `пакет старого сборщика`.
 
 ### Hard stops (do not invent a green report)
 
@@ -57,6 +63,8 @@ Start with **Input fingerprint** (mandatory):
 - name_status_count: <from pack>
 - has_unstaged_changes: <from pack>
 - diff_mode: <from pack>
+- sessions_count: <from pack, or <отсутствует в пакете> when the field is absent>
+- sessions_paths: <from pack, or <отсутствует в пакете> when the field is absent>
 ```
 
 Then only:
@@ -66,10 +74,12 @@ Then only:
 
 ### Claimed but missing
 - ❌ Issue/task-card or AGENTS.md cycle items absent from the pack evidence.
+- ❌ `sessions_count: 0` (the cycle requires a session snapshot before this check).
 
 ### Out of scope
 - ⚠️ paths/changes in the pack outside Issue/task-card scope.
 - ⚠️ unstaged divergence when `has_unstaged_changes: yes`.
+- ⚠️ `пакет старого сборщика` when `sessions_count` and `sessions_paths` are both absent.
 
 Never mark an unexecuted check as passed.
 
