@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.3.0-experimental]
+
 - C13 — scripts/labels/apply-labels.ps1: аддитивный накат меток, -WhatIf, -LabelsRef; разрешение в roles.md, Issue #24.
 - C09 — task-start: перенос длинной строки шага 2 без смены текста, Issue #16.
 - C11 — verifier: поля sessions_count и sessions_paths, секция sessions, Issue #20.
