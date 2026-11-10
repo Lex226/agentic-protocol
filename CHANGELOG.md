@@ -2,6 +2,7 @@
 
 ## [Unreleased]
 
+- C12 — источник инструкций Perplexity и правила закрытия Issue и PR без merge, Issue #21.
 - C08 — ссылка на PR #10 у записи C04 в CHANGELOG, Issue #15.
 - C07 — снимок сессии из sessions/ в пакете verifier, Issue #14.
 - C06 — проверка ref в release.yml без переопределения GITHUB_REF, Issue #13.
