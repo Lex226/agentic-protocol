@@ -2,6 +2,7 @@
 
 ## [Unreleased]
 
+- C10 — ошибка gh с большим stderr больше не идёт через Write-Error, Issue #19.
 - C08 — ссылка на PR #10 у записи C04 в CHANGELOG, Issue #15.
 - C07 — снимок сессии из sessions/ в пакете verifier, Issue #14.
 - C06 — проверка ref в release.yml без переопределения GITHUB_REF, Issue #13.
