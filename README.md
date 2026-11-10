@@ -12,6 +12,7 @@ Shared protocol for agent task, report, and review handoff.
 - `.cursor/skills/task-card`, `task-start`, `review-handoff`
 - `.cursor/hooks.json` и `scripts/hooks/` — guard и его тесты
 - `scripts/verify/` — сбор пакета verifier и тесты сборщика
+- `scripts/labels/` — аддитивный накат меток
 - `protocol/` — роли, цикл, платформа, handoff, вердикт по SHA
 - `adr/` — архитектурные решения: шаблон `ADR-0001-template.md` и `ADR-0002-universal-protocol.md` (статус Proposed)
 
