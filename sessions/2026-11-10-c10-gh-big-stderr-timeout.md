@@ -89,6 +89,35 @@ author: Cursor
 
 Ревью Perplexity по handoff и merge проверенного SHA, если блокирующих замечаний нет. После merge workflow `release` не запускается: `protocol/version.json` не менялся. Ветка отстаёт от `origin/main` на PR #25; при merge файл `protocol/perplexity/project.md` с main нужно сохранить.
 
+## Перенос на a6f2c0e
+
+PR #27 не смёржен: конфликт с `main` `a6f2c0e4ccf1b0a3dee55b27dd368b0b7fab093f` в `CHANGELOG` `[Unreleased]`. Check runs на этом PR не было. По существу правки замечаний не было.
+
+Вариант (A) не применялся: `origin/fix/c10-gh-big-stderr-timeout` остался на `edf2f3093355e051e73b1b888093fd829e87160f`, разрешения конфликта в UI не было. `git merge` hook по-прежнему не выполняет. `git cherry-pick edf2f3093355e051e73b1b888093fd829e87160f` hook не отклонил.
+
+Ветка `fix/c10-gh-big-stderr-timeout-v2` от `origin/main` `a6f2c0e4ccf1b0a3dee55b27dd368b0b7fab093f`. В `[Unreleased]` первые две строки — C10 и C12, обе есть, C10 первая.
+
+Повтор на этой базе, Windows PowerShell 5.1.20348.4294:
+
+| Проверка | Результат |
+|---|---|
+| `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/verify/tests/test-verifier-pack.ps1` | exit 0. `RESULT: 16 passed / 0 failed (total 16)`. `github-origin-gh-big-stderr` — PASS |
+| `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/hooks/tests/run-guard-tests.ps1` | exit 0. `57 passed / 0 failed (total 57)` |
+
+`exit 1` в функции, отдельный прогон, не по документации. Скрипт: функция вызывает `exit 1`, затем строка `AFTER_FUNCTION`.
+
+- `powershell -File` этого скрипта: процесс завершается с кодом 1, `AFTER_FUNCTION` не печатается. Так тесты запускают сборщик.
+- Другой `-File` делает dot-source этого скрипта и затем пишет `AFTER_DOT` и `exit 7`: печатается `AFTER_DOT`, код процесса 7. Хост на `exit 1` не завершился, код 1 наружу не прошёл.
+- Dot-source скрипта с `exit 1` на верхнем уровне, не в функции: тот же итог, вызывающий доходит до `exit 7`.
+
+Фраза «exit 1 в функции завершает хост при dot-source» этим замером не подтверждена.
+
+Следующий шаг переноса: ревью нового PR. PR #27 закрывает Perplexity без merge, по поручению владельца.
+
+### verifier (субагент), перенос
+
+Запущено по пакету после staging этого дополнения, до этого абзаца. Fingerprint: `branch` `fix/c10-gh-big-stderr-timeout-v2`, `origin_main_sha` `a6f2c0e4ccf1b0a3dee55b27dd368b0b7fab093f`, `name_status_count` 4, `has_unstaged_changes` no, `diff_mode` full, `sessions_count` 1, `sessions_paths` `sessions/2026-11-10-c10-gh-big-stderr-timeout.md`. Чужих путей нет. Прогоны тестов и новый PR субагент не засчитывал. Этот абзац дописан после прогона.
+
 ---
 Perplexity 10.11.2026, сессия планирования
 - Открытые: #16 C09, #19 C10, #20 C11, #21 C12, #23 W02, #24 C13.
