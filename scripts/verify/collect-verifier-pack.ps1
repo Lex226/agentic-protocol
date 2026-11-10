@@ -117,11 +117,15 @@ function Get-IssueScopeText {
     $proc.WaitForExit()
     $errText = $errTask.GetAwaiter().GetResult()
     if ($proc.ExitCode -ne 0 -or -not $json) {
+        # Windows PowerShell 5.1 does not finish Write-Error of a ~1 MiB message within 90s.
+        # The big-stderr case still requires this text on the process error stream.
         if (($proc.ExitCode -eq 0) -and -not $json) {
-            Write-Error "gh issue view $Number failed: empty stdout (exit $($proc.ExitCode)): $errText"
+            $failText = "gh issue view $Number failed: empty stdout (exit $($proc.ExitCode)): $errText"
         } else {
-            Write-Error "gh issue view $Number failed (exit $($proc.ExitCode)): $errText"
+            $failText = "gh issue view $Number failed (exit $($proc.ExitCode)): $errText"
         }
+        [Console]::Error.WriteLine($failText)
+        exit 1
     }
     $issueObj = $json | ConvertFrom-Json
     return (@(
