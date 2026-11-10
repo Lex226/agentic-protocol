@@ -2,6 +2,7 @@
 
 ## [Unreleased]
 
+- C08 — ссылка на PR #10 у записи C04 в CHANGELOG, Issue #15.
 - C07 — снимок сессии из sessions/ в пакете verifier, Issue #14.
 - C06 — проверка ref в release.yml без переопределения GITHUB_REF, Issue #13.
 - C05 — базовая линия private на GitHub Free: протокол не требует rulesets, protected branches и required status checks (`protocol/platform.md`), Issue #11.
@@ -13,7 +14,7 @@
 
 - C02 — известные пределы verifier, Issue #4, PR #7.
 - C03 — исключение docs-only, Issue #6, PR #8.
-- C04 — версия `0.2.0-experimental`, CHANGELOG и автоматический релиз, Issue #9.
+- C04 — версия `0.2.0-experimental`, CHANGELOG и автоматический релиз, Issue #9, PR #10.
 
 ## [0.1.1-experimental]
 
