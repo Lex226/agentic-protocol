@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- C19 — README без зашитого номера версии, тег подключения по protocol/version.json, Issue #36.
+
 ## [0.3.0-experimental]
 
 - C13 — scripts/labels/apply-labels.ps1: аддитивный накат меток, -WhatIf, -LabelsRef; разрешение в roles.md, Issue #24.
