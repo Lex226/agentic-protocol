@@ -2,6 +2,7 @@
 
 ## [Unreleased]
 
+- C09 — task-start: перенос длинной строки шага 2 без смены текста, Issue #16.
 - C11 — verifier: поля sessions_count и sessions_paths, секция sessions, Issue #20.
 - C10 — ошибка gh с большим stderr больше не идёт через Write-Error, Issue #19.
 - C12 — источник инструкций Perplexity и правила закрытия Issue и PR без merge, Issue #21.

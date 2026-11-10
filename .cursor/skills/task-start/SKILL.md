@@ -28,7 +28,8 @@ missing or contradicts AGENTS.md/ADR — STOP and list the gaps; do not guess.
    outside the brief's scope, report it as a tail, do not copy it.
 2. **Task card.** Use skill `task-card`. If brief says `task-card: СТОП` —
    stop and wait for the owner's answer. If `продолжить` — print the card and
-   go on (only when protocol/cycle.md section «Исключение docs-only» applies; a consumer AGENTS.md may only tighten that rule;
+   go on (only when protocol/cycle.md section «Исключение docs-only» applies;
+   a consumer AGENTS.md may only tighten that rule;
    otherwise treat as СТОП and say so).
 3. **Edit** only the items under «Скоуп». An item that needs a new requirement
    is not edited: mark «требует решения владельца» and report it.
