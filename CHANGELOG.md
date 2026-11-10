@@ -2,6 +2,7 @@
 
 ## [Unreleased]
 
+- C07 — снимок сессии из sessions/ в пакете verifier, Issue #14.
 - C06 — проверка ref в release.yml без переопределения GITHUB_REF, Issue #13.
 - C05 — базовая линия private на GitHub Free: протокол не требует rulesets, protected branches и required status checks (`protocol/platform.md`), Issue #11.
 - C05 — матрица public/private × Free/платный в README; `.github/workflows/` относятся к `agentic-protocol` и потребителю не копируются, Issue #11.

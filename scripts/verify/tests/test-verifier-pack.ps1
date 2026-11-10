@@ -459,6 +459,75 @@ internal static class GhShim
     }
 }
 
+# C07: sessions/ section is independent of the index. Content marker is Cyrillic.
+$sessRepo = Join-Path $env:TEMP ('c07-pack-' + [guid]::NewGuid().ToString('N'))
+$pushedSess = $false
+try {
+    [void][System.IO.Directory]::CreateDirectory($sessRepo)
+    Push-Location $sessRepo
+    $pushedSess = $true
+    $initCode = Invoke-GitQuiet -c init.defaultBranch=main init -q
+    Set-Content -Path (Join-Path $sessRepo 'README.md') -Value "base`n" -Encoding utf8
+    Invoke-GitQuiet add README.md | Out-Null
+    $commitCode = Invoke-GitQuiet -c user.name=c07-test -c user.email=c07@test.local commit -q -m 'init'
+    if ($initCode -ne 0 -or $commitCode -ne 0) {
+        $setupDetail = "temp git init/commit failed init={0} commit={1}" -f $initCode, $commitCode
+        Write-CaseResult -Name 'sessions-absent' -Ok:$false -Detail $setupDetail
+        Write-CaseResult -Name 'sessions-untracked' -Ok:$false -Detail $setupDetail
+        Write-CaseResult -Name 'sessions-staged' -Ok:$false -Detail $setupDetail
+    } else {
+        $marker = 'МаркерСнимкаКириллица'
+        $run0 = & powershell -NoProfile -ExecutionPolicy Bypass -File $Collector -Issue 14 -OriginMain main 2>&1 | Out-String
+        $ok0 = ($LASTEXITCODE -eq 0) -and
+            ($run0 -match '(?m)^- sessions_count: 0\s*$') -and
+            ($run0 -match '(?m)^- sessions_paths: \(none\)\s*$') -and
+            ($run0.Contains('снимок сессии не найден')) -and
+            (-not $run0.Contains($marker))
+        Write-CaseResult -Name 'sessions-absent' -Ok:$ok0 -Detail ("exit={0}" -f $LASTEXITCODE)
+
+        $sessDir = Join-Path $sessRepo 'sessions'
+        [void][System.IO.Directory]::CreateDirectory($sessDir)
+        $snapRel = 'sessions/c07-snapshot.md'
+        $snapPath = Join-Path $sessDir 'c07-snapshot.md'
+        $snapText = "## Заголовок снимка`n$marker`n"
+        [System.IO.File]::WriteAllText($snapPath, $snapText, [System.Text.UTF8Encoding]::new($false))
+
+        $runU = & powershell -NoProfile -ExecutionPolicy Bypass -File $Collector -Issue 14 -OriginMain main 2>&1 | Out-String
+        $exitU = $LASTEXITCODE
+        $sIdx = $runU.IndexOf("## sessions")
+        $mIdx = $runU.IndexOf($marker)
+        $tIdx = $runU.IndexOf("## task-card / issue scope")
+        $diffU = Get-Section -Pack $runU -Heading 'diff'
+        $okU = ($exitU -eq 0) -and
+            ($runU -match '(?m)^- sessions_count: 1\s*$') -and
+            ($runU -match '(?m)^- sessions_paths: sessions/c07-snapshot\.md\s*$') -and
+            ($sIdx -ge 0) -and ($mIdx -gt $sIdx) -and ($tIdx -gt $mIdx) -and
+            (-not $diffU.Contains($marker))
+        Write-CaseResult -Name 'sessions-untracked' -Ok:$okU -Detail ("exit={0}; markerInDiff={1}" -f $exitU, $diffU.Contains($marker))
+
+        $addCode = Invoke-GitQuiet add -- $snapRel
+        $runS = & powershell -NoProfile -ExecutionPolicy Bypass -File $Collector -Issue 14 -OriginMain main 2>&1 | Out-String
+        $exitS = $LASTEXITCODE
+        $nameS = Get-Section -Pack $runS -Heading 'name-status'
+        $sIdxS = $runS.IndexOf("## sessions")
+        $mIdxS = $runS.IndexOf($marker)
+        $tIdxS = $runS.IndexOf("## task-card / issue scope")
+        $diffS = Get-Section -Pack $runS -Heading 'diff'
+        $okS = ($addCode -eq 0) -and ($exitS -eq 0) -and
+            ($runS -match '(?m)^- sessions_count: 1\s*$') -and
+            ($runS -match '(?m)^- sessions_paths: sessions/c07-snapshot\.md\s*$') -and
+            ($sIdxS -ge 0) -and ($mIdxS -gt $sIdxS) -and ($tIdxS -gt $mIdxS) -and
+            ($nameS.Contains('sessions/c07-snapshot.md')) -and
+            ($diffS.Contains($marker))
+        Write-CaseResult -Name 'sessions-staged' -Ok:$okS -Detail ("add={0}; exit={1}; name={2}" -f $addCode, $exitS, (($nameS -replace '\s+', ' ').Trim()))
+    }
+} finally {
+    if ($pushedSess) { Pop-Location }
+    if (Test-Path -LiteralPath $sessRepo) {
+        Remove-Item -LiteralPath $sessRepo -Recurse -Force -ErrorAction SilentlyContinue
+    }
+}
+
 Write-Host ''
 Write-Host ("RESULT: {0} passed / {1} failed (total {2})" -f $passed, $failed, ($passed + $failed))
 if ($failed -gt 0) {
