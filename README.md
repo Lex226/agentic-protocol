@@ -13,6 +13,7 @@ Shared protocol for agent task, report, and review handoff.
 - `.cursor/hooks.json` и `scripts/hooks/` — guard и его тесты
 - `scripts/verify/` — сбор пакета verifier и тесты сборщика
 - `protocol/` — роли, цикл, платформа, handoff, вердикт по SHA
+- `adr/` — архитектурные решения: шаблон `ADR-0001-template.md` и `ADR-0002-universal-protocol.md` (статус Proposed)
 
 `.github/workflows/` относятся к репозиторию `agentic-protocol` и в состав для копирования не входят.
 
