@@ -2,6 +2,7 @@
 
 ## [Unreleased]
 
+- C20 — cycle.md без дубля абзаца о недоступном verifier, Issue #38.
 - C19 — README без зашитого номера версии, тег подключения по protocol/version.json, Issue #36.
 
 ## [0.3.0-experimental]
