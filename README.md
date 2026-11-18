@@ -14,7 +14,7 @@ Shared protocol for agent task, report, and review handoff.
 - `scripts/verify/` — сбор пакета verifier и тесты сборщика
 - `scripts/labels/` — аддитивный накат меток
 - `protocol/` — роли, цикл, приоритет правил (`precedence.md`), платформа, handoff, вердикт по SHA
-- `adr/` — архитектурные решения: шаблон `ADR-0001-template.md` и `ADR-0002-universal-protocol.md` (статус Proposed)
+- `adr/` — архитектурные решения: шаблон `ADR-0001-template.md` и `ADR-0002-universal-protocol.md` (статус Accepted)
 
 `.github/workflows/` относятся к репозиторию `agentic-protocol` и в состав для копирования не входят. Каталог `protocol/perplexity/**` в копируемый состав не входит.
 
