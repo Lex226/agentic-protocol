@@ -13,16 +13,26 @@ Shared protocol for agent task, report, and review handoff.
 - `.cursor/hooks.json` и `scripts/hooks/` — guard и его тесты
 - `scripts/verify/` — сбор пакета verifier и тесты сборщика
 - `scripts/labels/` — аддитивный накат меток
-- `protocol/` — роли, цикл, платформа, handoff, вердикт по SHA
+- `protocol/` — роли, цикл, приоритет правил (`precedence.md`), платформа, handoff, вердикт по SHA
 - `adr/` — архитектурные решения: шаблон `ADR-0001-template.md` и `ADR-0002-universal-protocol.md` (статус Proposed)
 
-`.github/workflows/` относятся к репозиторию `agentic-protocol` и в состав для копирования не входят.
+`.github/workflows/` относятся к репозиторию `agentic-protocol` и в состав для копирования не входят. Каталог `protocol/perplexity/**` в копируемый состав не входит.
 
 Общие правила репозиториев: [конституция github-playbook](https://github.com/Lex226/github-playbook/blob/main/standards/00-constitution.md).
 
 ## Как подключить
 
 Подключение ручное: скопировать состав выше в целевой репозиторий с тега `v<protocol_version>`. Актуальный — последний Release; пример — `v0.3.0-experimental`. Тег и значение `protocol_version` в `protocol/version.json` совпадают. Движок не подставляет имя целевого проекта. В промпте handoff `<owner>/<repo>` заполняется при выпуске. `.github/workflows/` потребителю не копируются.
+
+## Допустимые отличия копии
+
+- `scripts/hooks/tests/guard-git.cases.json` — слаг репозитория (`o/r` в этом репозитории, у потребителя свой).
+- В промпте `review-handoff` `<owner>/<repo>` — репозиторий, который ревьюят.
+- `protocol/perplexity/**` не копируется.
+
+## Потребитель с собственными правилами
+
+Приоритет правил — в [protocol/precedence.md](protocol/precedence.md).
 
 ## Как выпускается релиз
 

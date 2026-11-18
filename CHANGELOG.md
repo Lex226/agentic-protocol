@@ -2,6 +2,7 @@
 
 ## [Unreleased]
 
+- C21 — новый precedence.md, правило ПД в снимке, ссылка меток без C14, состав и отличия копии в README, Issue #40.
 - C20 — cycle.md без дубля абзаца о недоступном verifier, Issue #38.
 - C19 — README без зашитого номера версии, тег подключения по protocol/version.json, Issue #36.
 
