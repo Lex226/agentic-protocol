@@ -24,6 +24,8 @@ Shared protocol for agent task, report, and review handoff.
 
 Подключение ручное: скопировать состав выше в целевой репозиторий с тега `v<protocol_version>`. Актуальный — последний Release; пример — `v0.3.0-experimental`. Тег и значение `protocol_version` в `protocol/version.json` совпадают. Движок не подставляет имя целевого проекта. В промпте handoff `<owner>/<repo>` заполняется при выпуске. `.github/workflows/` потребителю не копируются.
 
+При подключении и при обновлении сверить собственные стартовые промпты потребителя с [protocol/](protocol/) и скиллом [task-start](.cursor/skills/task-start/SKILL.md).
+
 ## Допустимые отличия копии
 
 - `scripts/hooks/tests/guard-git.cases.json` — слаг репозитория (`o/r` в этом репозитории, у потребителя свой).
