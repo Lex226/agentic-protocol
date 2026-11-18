@@ -21,7 +21,7 @@ missing or contradicts AGENTS.md/ADR — STOP and list the gaps; do not guess.
    the brief. For every `blob` line in the brief, compare with
    `git rev-parse origin/main:<path>`; mismatch → STOP with
    «файл / ожидался / факт / коммит». Record the base: `git rev-parse origin/main`.
-1. **Read.** `README.md`, `protocol/` (roles, cycle, handoff, verdict), `AGENTS.md`
+1. **Read.** `README.md`, `protocol/` (roles, cycle, handoff, verdict, precedence), `AGENTS.md`
    when the repository has one, the Issue, the brief's sources and the latest
    file in `sessions/`. If the brief names a sample
    commit/file, follow its format exactly; if the sample changed something
