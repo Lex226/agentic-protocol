@@ -16,10 +16,15 @@ missing or contradicts AGENTS.md/ADR — STOP and list the gaps; do not guess.
 
 ## Steps
 
-0. **Start point.** `git status` must be clean, else STOP. `git fetch origin`,
-   then `git switch -c <branch> origin/main`. Do not compare with any SHA from
-   the brief. For every `blob` line in the brief, compare with
-   `git rev-parse origin/main:<path>`; mismatch → STOP with
+0. **Start point.** Tasks run one after another in the main checkout. A parallel
+   task is a separate clone `../<repo>-<cxx>` with one Cursor window on that
+   clone; run the rest of this step inside the clone. In the main checkout,
+   do not clone.
+   `git status` must be clean, else STOP. `git fetch origin`.
+   `git ls-remote --heads origin <branch>` must be empty, else STOP: the task
+   branch exists in only one clone. Then `git switch -c <branch> origin/main`.
+   Do not compare with any SHA from the brief. For every `blob` line in the
+   brief, compare with `git rev-parse origin/main:<path>`; mismatch → STOP with
    «файл / ожидался / факт / коммит». Record the base: `git rev-parse origin/main`.
 1. **Read.** `README.md`, `protocol/` (roles, cycle, handoff, verdict, precedence), `AGENTS.md`
    when the repository has one, the Issue, the brief's sources and the latest
@@ -47,7 +52,14 @@ missing or contradicts AGENTS.md/ADR — STOP and list the gaps; do not guess.
    files and the snapshot, then `git diff --cached --check` and
    `git diff --cached --stat` (expected files from the brief + snapshot).
    Run brief-specific checks. Search the staged diff for secrets and
-   `Closes|Fixes|Resolves`. Collect
+   `Closes|Fixes|Resolves`. Before the pack is collected there are no unstaged
+   edits and no untracked files: every task edit is in the index
+   (`has_unstaged_changes: no`). If `has_unstaged_changes: yes`, STOP: do not
+   pass that pack to the subagent; bring the tree to the staged set and collect
+   the pack again. The STOP applies to the pack that is passed to the
+   subagent. A snapshot edit after the verifier run is staged again before
+   commit; the pack is not collected again; the snapshot is marked
+   «дописано после прогона». Collect
    `scripts/verify/collect-verifier-pack.ps1 -Issue <N>` and pass it to the
    readonly verifier subagent. In the report and the handoff, label that run
    `verifier (субагент)`. A parent-only check without that subagent is

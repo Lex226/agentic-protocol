@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- C32 — последовательная работа в основном checkout; параллельная задача в отдельном клоне; СТОП родителя при has_unstaged_changes: yes, Issue #55.
+
 ## [0.4.0-experimental]
 
 - C31 — смена меток Issue/PR в разрешённых записях Perplexity, Issue #52.
