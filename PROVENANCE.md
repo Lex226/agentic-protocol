@@ -16,7 +16,7 @@
 | `.cursor/skills/task-start/SKILL.md` | Чтение `protocol/` и `AGENTS.md`, если он есть. Снимок сессии ссылается на `protocol/cycle.md`. Публикация ссылается на `protocol/roles.md`. |
 | `.cursor/skills/review-handoff/SKILL.md` | В шаблоне `<owner>/<repo>`. Ссылки на правила ведут на `protocol/handoff.md` и `protocol/roles.md`. |
 | `.cursor/hooks.json` | Без изменений. |
-| `scripts/hooks/guard-git.ps1` | Без изменений. |
+| `scripts/hooks/guard-git.ps1` | Строки причин ссылаются на `protocol/roles.md`. Комментарии говорят о неподключённом GitHub MCP. Логика allow/ask/deny без изменений. |
 | `scripts/hooks/tests/guard-git.cases.json` | В трёх командах слаг репозитория-источника заменён на `o/r`. |
 | `scripts/hooks/tests/run-guard-tests.ps1` | Без изменений. |
 | `scripts/verify/collect-verifier-pack.ps1` | Без изменений. |
@@ -31,9 +31,9 @@
 
 Не копировались `.cursor/rules/project.mdc`, `AGENTS.md`, `adr/`, `agent_docs/` и `sessions/` источника.
 
-## Имя ADR-0003
+## Причины guard
 
-В причинах отказа `scripts/hooks/guard-git.ps1` остаётся текст ADR-0003. Комментарии того же файла упоминают ADR-0005. Это имена правил источника. Скрипт не менялся. В этом репозитории правило публикации записано в `protocol/roles.md`, цикл и handoff — в `protocol/cycle.md` и `protocol/handoff.md`.
+В причинах отказа `scripts/hooks/guard-git.ps1` указан `protocol/roles.md`. Комментарии того же файла говорят о неподключённом GitHub MCP. Логика allow/ask/deny не менялась. В этом репозитории правило публикации записано в `protocol/roles.md`, цикл и handoff — в `protocol/cycle.md` и `protocol/handoff.md`.
 
 ## Синтетические адреса
 

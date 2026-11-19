@@ -18,8 +18,6 @@ Shared protocol for agent task, report, and review handoff.
 
 `.github/workflows/` относятся к репозиторию `agentic-protocol` и в состав для копирования не входят. Каталог `protocol/perplexity/**` в копируемый состав не входит.
 
-Общие правила репозиториев: [конституция github-playbook](https://github.com/Lex226/github-playbook/blob/main/standards/00-constitution.md).
-
 ## Как подключить
 
 Подключение ручное: скопировать состав выше в целевой репозиторий с тега `v<protocol_version>`. Актуальный — последний Release; пример — `v0.3.0-experimental`. Тег и значение `protocol_version` в `protocol/version.json` совпадают. Движок не подставляет имя целевого проекта. В промпте handoff `<owner>/<repo>` заполняется при выпуске. `.github/workflows/` потребителю не копируются.
@@ -70,7 +68,6 @@ Actions: [GitHub's plans](https://docs.github.com/en/get-started/learning-about-
 - Guard проверяет командную строку в IDE. Это не изоляция: алиасы git, тело файла у `powershell -File` и вложенные подстановки вроде `$(git …)` он не разбирает как отдельные команды.
 - Ответ `ask` может не показать запрос. Причина не выяснена.
 - Поведение `deny` и `failClosed` в этом импорте не проверено. В `.cursor/hooks.json` стоит `failClosed: true`, как в источнике.
-- Строки причин в `scripts/hooks/guard-git.ps1` называют ADR-0003. Это имя правила в репозитории-источнике. В этом репозитории то же правило записано в `protocol/roles.md`.
 - Разбиение цепочек команд учитывает простые кавычки приблизительно. Упоминание git или gh в середине команды даёт `ask`, в том числе для безобидных вызовов вроде `Get-Command git`.
 - `scripts/hooks/guard-git.ps1` и матрица его кейсов меняются только после реального инцидента или явного решения владельца.
 - Guard не заменяет защиту ветки на GitHub.
