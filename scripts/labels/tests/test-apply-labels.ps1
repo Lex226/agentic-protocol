@@ -11,6 +11,7 @@ Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
 $ApplyScript = (Resolve-Path (Join-Path $PSScriptRoot '..\apply-labels.ps1')).Path
+$ValidSource = 'fixture/source'
 $ValidRef = '0123456789abcdef0123456789abcdef01234567'
 
 $passed = 0
@@ -143,12 +144,20 @@ $contractOk = $bomOk -and
     ($scriptText -match '\[switch\]\$WhatIf') -and
     ($scriptText -match 'Mandatory\s*=\s*\$true') -and
     ($scriptText -match '\[regex\]::IsMatch\(\$LabelsRef, ''\^\[0-9a-f\]\{40\}\$''\)') -and
+    ($scriptText -match '\$LabelsSource') -and
+    ($scriptText -notmatch '\$LabelsSource\s*=') -and
     ($scriptText -notmatch '\[CmdletBinding') -and
     ($scriptText -notmatch 'SupportsShouldProcess') -and
     ($scriptText -notmatch 'RemoveExtra') -and
     ($scriptText -notmatch '(?i)label\s+delete') -and
     ($scriptText -notmatch '(?m)^\s*Write-Error\b')
 Write-CaseResult -Name 'script-contract' -Ok:$contractOk -Detail ("bom={0}" -f $bomOk)
+
+$runNoSource = Invoke-Apply -ScriptArgs @('-Repo', 'fixture/repo', '-LabelsRef', $ValidRef)
+if (Assert-RunFinished -Run $runNoSource -Name 'missing-labels-source') {
+    $okNoSource = ($runNoSource.Exit -ne 0) -and ($runNoSource.Text.Contains('LabelsSource'))
+    Write-CaseResult -Name 'missing-labels-source' -Ok:$okNoSource -Detail ("exit={0}; out={1}" -f $runNoSource.Exit, (($runNoSource.Text -replace '\s+', ' ').Trim()))
+}
 
 $savedPath = $env:PATH
 $hadShimLog = Test-Path Env:GH_SHIM_LOG
@@ -273,7 +282,7 @@ internal static class GhShim
             $env:GH_SHIM_MODE = 'ok'
             Set-ShimLabelsJson -Json $demoSame
             $env:GH_SHIM_EXISTING = '[{"name":"demo","color":"aaaaaa","description":"same"},{"name":"local-extra","color":"cccccc","description":"keep"}]'
-            $runWhatIf = Invoke-Apply -ScriptArgs @('-Repo', 'fixture/repo', '-LabelsRef', $ValidRef, '-WhatIf')
+            $runWhatIf = Invoke-Apply -ScriptArgs @('-Repo', 'fixture/repo', '-LabelsSource', $ValidSource, '-LabelsRef', $ValidRef, '-WhatIf')
             if (Assert-RunFinished -Run $runWhatIf -Name 'whatif-readonly') {
                 $logWhatIfText = Get-ShimLogText -Path $logWhatIf
                 $okWhatIf = ($runWhatIf.Exit -eq 0) -and
@@ -281,7 +290,8 @@ internal static class GhShim
                     ($runWhatIf.Text.Contains('без изменений: demo')) -and
                     ($runWhatIf.Text.Contains('создать: fresh')) -and
                     (-not (Test-LogHasWrite -LogText $logWhatIfText)) -and
-                    ($logWhatIfText.Contains('contents/standards/labels.json')) -and
+                    ($runWhatIf.Text.Contains("Набор: $ValidSource standards/labels.json @ $ValidRef")) -and
+                    ($logWhatIfText.Contains("repos/$ValidSource/contents/standards/labels.json")) -and
                     ($logWhatIfText.Contains('label list'))
                 Write-CaseResult -Name 'whatif-readonly' -Ok:$okWhatIf -Detail ("exit={0}; log={1}" -f $runWhatIf.Exit, (($logWhatIfText -replace '\s+', ' ').Trim()))
             }
@@ -292,7 +302,7 @@ internal static class GhShim
             $env:GH_SHIM_MODE = 'ok'
             Set-ShimLabelsJson -Json $demoOnly
             $env:GH_SHIM_EXISTING = '[]'
-            $runCreate = Invoke-Apply -ScriptArgs @('-Repo', 'fixture/repo', '-LabelsRef', $ValidRef)
+            $runCreate = Invoke-Apply -ScriptArgs @('-Repo', 'fixture/repo', '-LabelsSource', $ValidSource, '-LabelsRef', $ValidRef)
             if (Assert-RunFinished -Run $runCreate -Name 'create') {
                 $logCreateText = Get-ShimLogText -Path $logCreate
                 $okCreate = ($runCreate.Exit -eq 0) -and
@@ -309,7 +319,7 @@ internal static class GhShim
             $env:GH_SHIM_MODE = 'ok'
             Set-ShimLabelsJson -Json $demoOnly
             $env:GH_SHIM_EXISTING = '[{"name":"demo","color":"ffffff","description":"same"}]'
-            $runUpdate = Invoke-Apply -ScriptArgs @('-Repo', 'fixture/repo', '-LabelsRef', $ValidRef)
+            $runUpdate = Invoke-Apply -ScriptArgs @('-Repo', 'fixture/repo', '-LabelsSource', $ValidSource, '-LabelsRef', $ValidRef)
             if (Assert-RunFinished -Run $runUpdate -Name 'update') {
                 $logUpdateText = Get-ShimLogText -Path $logUpdate
                 $okUpdate = ($runUpdate.Exit -eq 0) -and
@@ -325,7 +335,7 @@ internal static class GhShim
             $env:GH_SHIM_MODE = 'ok'
             Set-ShimLabelsJson -Json $demoOnly
             $env:GH_SHIM_EXISTING = '[{"name":"demo","color":"aaaaaa","description":"same"},{"name":"local-extra","color":"cccccc","description":"keep"}]'
-            $runExtra = Invoke-Apply -ScriptArgs @('-Repo', 'fixture/repo', '-LabelsRef', $ValidRef)
+            $runExtra = Invoke-Apply -ScriptArgs @('-Repo', 'fixture/repo', '-LabelsSource', $ValidSource, '-LabelsRef', $ValidRef)
             if (Assert-RunFinished -Run $runExtra -Name 'extra-not-deleted') {
                 $logExtraText = Get-ShimLogText -Path $logExtra
                 $okExtra = ($runExtra.Exit -eq 0) -and
@@ -341,7 +351,7 @@ internal static class GhShim
             $env:GH_SHIM_MODE = 'ok'
             Set-ShimLabelsJson -Json $emptyDesc
             $env:GH_SHIM_EXISTING = '[{"name":"demo","color":"aaaaaa","description":null}]'
-            $runNull = Invoke-Apply -ScriptArgs @('-Repo', 'fixture/repo', '-LabelsRef', $ValidRef)
+            $runNull = Invoke-Apply -ScriptArgs @('-Repo', 'fixture/repo', '-LabelsSource', $ValidSource, '-LabelsRef', $ValidRef)
             if (Assert-RunFinished -Run $runNull -Name 'null-description-equals-empty') {
                 $logNullText = Get-ShimLogText -Path $logNull
                 $okNull = ($runNull.Exit -eq 0) -and
@@ -357,7 +367,7 @@ internal static class GhShim
             $env:GH_SHIM_MODE = 'ok'
             Set-ShimLabelsJson -Json $utf8Set
             $env:GH_SHIM_EXISTING = '[{"name":"demo","color":"aaaaaa","description":"то же"}]'
-            $runUtf = Invoke-Apply -ScriptArgs @('-Repo', 'fixture/repo', '-LabelsRef', $ValidRef)
+            $runUtf = Invoke-Apply -ScriptArgs @('-Repo', 'fixture/repo', '-LabelsSource', $ValidSource, '-LabelsRef', $ValidRef)
             if (Assert-RunFinished -Run $runUtf -Name 'utf8-description') {
                 $logUtfText = Get-ShimLogText -Path $logUtf
                 $okUtf = ($runUtf.Exit -eq 0) -and
@@ -372,7 +382,7 @@ internal static class GhShim
             $env:GH_SHIM_MODE = 'ok'
             Set-ShimLabelsJson -Json $demoOnly
             $env:GH_SHIM_EXISTING = '[]'
-            $runShort = Invoke-Apply -ScriptArgs @('-Repo', 'fixture/repo', '-LabelsRef', 'fa01bdf')
+            $runShort = Invoke-Apply -ScriptArgs @('-Repo', 'fixture/repo', '-LabelsSource', $ValidSource, '-LabelsRef', 'fa01bdf')
             if (Assert-RunFinished -Run $runShort -Name 'short-labelsref') {
                 $logShortText = Get-ShimLogText -Path $logShort
                 $okShort = ($runShort.Exit -ne 0) -and ([string]::IsNullOrWhiteSpace($logShortText)) -and
@@ -384,7 +394,7 @@ internal static class GhShim
             [System.IO.File]::WriteAllText($logBad, '')
             $env:GH_SHIM_LOG = $logBad
             $env:GH_SHIM_MODE = 'ok'
-            $runBad = Invoke-Apply -ScriptArgs @('-Repo', 'fixture/repo', '-LabelsRef', ('g' * 40))
+            $runBad = Invoke-Apply -ScriptArgs @('-Repo', 'fixture/repo', '-LabelsSource', $ValidSource, '-LabelsRef', ('g' * 40))
             if (Assert-RunFinished -Run $runBad -Name 'invalid-labelsref') {
                 $logBadText = Get-ShimLogText -Path $logBad
                 $okBad = ($runBad.Exit -ne 0) -and ([string]::IsNullOrWhiteSpace($logBadText))
@@ -397,7 +407,7 @@ internal static class GhShim
             $env:GH_SHIM_MODE = 'missing'
             Set-ShimLabelsJson -Json $demoOnly
             $env:GH_SHIM_EXISTING = '[]'
-            $runMissing = Invoke-Apply -ScriptArgs @('-Repo', 'fixture/repo', '-LabelsRef', $ValidRef)
+            $runMissing = Invoke-Apply -ScriptArgs @('-Repo', 'fixture/repo', '-LabelsSource', $ValidSource, '-LabelsRef', $ValidRef)
             if (Assert-RunFinished -Run $runMissing -Name 'missing-labels-json') {
                 $logMissingText = Get-ShimLogText -Path $logMissing
                 $okMissing = ($runMissing.Exit -ne 0) -and
@@ -411,7 +421,7 @@ internal static class GhShim
             [System.IO.File]::WriteAllText($logBig, '')
             $env:GH_SHIM_LOG = $logBig
             $env:GH_SHIM_MODE = 'bigerr'
-            $runBig = Invoke-Apply -ScriptArgs @('-Repo', 'fixture/repo', '-LabelsRef', $ValidRef)
+            $runBig = Invoke-Apply -ScriptArgs @('-Repo', 'fixture/repo', '-LabelsSource', $ValidSource, '-LabelsRef', $ValidRef)
             if (Assert-RunFinished -Run $runBig -Name 'big-stderr') {
                 $okBig = ($runBig.Exit -ne 0) -and ($runBig.Text.Contains('c13-shim-bigerr'))
                 Write-CaseResult -Name 'big-stderr' -Ok:$okBig -Detail ("exit={0}; marker={1}" -f $runBig.Exit, $runBig.Text.Contains('c13-shim-bigerr'))
@@ -428,7 +438,7 @@ internal static class GhShim
             $env:GH_SHIM_MODE = 'ok'
             Set-ShimLabelsJson -Json $demoOnly
             $env:GH_SHIM_EXISTING = '[' + ($limitItems -join ',') + ']'
-            $runLimit = Invoke-Apply -ScriptArgs @('-Repo', 'fixture/repo', '-LabelsRef', $ValidRef, '-WhatIf')
+            $runLimit = Invoke-Apply -ScriptArgs @('-Repo', 'fixture/repo', '-LabelsSource', $ValidSource, '-LabelsRef', $ValidRef, '-WhatIf')
             if (Assert-RunFinished -Run $runLimit -Name 'limit-200-warning') {
                 $logLimitText = Get-ShimLogText -Path $logLimit
                 $okLimit = ($runLimit.Exit -eq 0) -and

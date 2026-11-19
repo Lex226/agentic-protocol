@@ -1,7 +1,7 @@
 ﻿#Requires -Version 5.1
 <#
 .SYNOPSIS
-  Additively apply standards/labels.json from Lex226/github-playbook.
+  Additively apply standards/labels.json from a labels source repository.
 .DESCRIPTION
   Creates labels that are missing from the target repository and updates the
   color and description of labels that belong to the set. Labels outside the
@@ -9,14 +9,19 @@
   and no ShouldProcess.
 .PARAMETER Repo
   Target repository, owner/name.
+.PARAMETER LabelsSource
+  Labels set repository, owner/name. Mandatory, no default.
 .PARAMETER LabelsRef
-  Full lowercase 40-hex commit SHA of Lex226/github-playbook. Mandatory, no default.
+  Full lowercase 40-hex commit SHA of the labels source. Mandatory, no default.
 .PARAMETER WhatIf
   Print создать / обновить / без изменений for each label in the set. Read-only.
 #>
 param(
     [Parameter(Mandatory = $true)]
     [string]$Repo,
+
+    [Parameter(Mandatory = $true)]
+    [string]$LabelsSource,
 
     [Parameter(Mandatory = $true)]
     [string]$LabelsRef,
@@ -32,7 +37,6 @@ try {
     [Console]::OutputEncoding = $utf8NoBom
 } catch { }
 
-$LabelsSource = 'Lex226/github-playbook'
 $LabelsPath = 'standards/labels.json'
 $LabelListLimit = 200
 
@@ -161,6 +165,11 @@ function ConvertFrom-GitHubFileContent {
 
 if ($Repo -notmatch '^[^/\s]+/[^/\s]+$') {
     Write-ErrLine "Repo must be owner/name. Got: $Repo"
+    exit 1
+}
+
+if ($LabelsSource -notmatch '^[^/\s]+/[^/\s]+$') {
+    Write-ErrLine "LabelsSource must be owner/name. Got: $LabelsSource"
     exit 1
 }
 

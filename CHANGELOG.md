@@ -2,6 +2,7 @@
 
 ## [Unreleased]
 
+- C36: apply-labels — источник набора меток параметром (Refs #63).
 - C35: причины deny в guard ссылаются на protocol/roles.md вместо ADR-0003; из README и protocol/roles.md убраны ссылки на внешние репозитории (Refs #62). Остаток — #63, #64.
 - C32 — последовательная работа в основном checkout; параллельная задача в отдельном клоне; СТОП родителя при has_unstaged_changes: yes, Issue #55.
 
