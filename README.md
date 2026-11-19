@@ -36,7 +36,7 @@ Shared protocol for agent task, report, and review handoff.
 
 ## Как выпускается релиз
 
-Релизный pull request переименовывает раздел `## [Unreleased]` в `## [<версия>]` и записывает эту версию в `protocol/version.json`. После merge в `main` workflow `release` создаёт тег `v<версия>` и GitHub Release на merge commit. Если в версии есть `-`, Release публикуется как pre-release. Ручной тег и перенос тега не используются.
+Pull request, который меняет поведение движка, добавляет `changelog.d/<cxx>.md` (одна строка в формате записи `[Unreleased]`) и не меняет `CHANGELOG.md`. Релизный PR переименовывает `## [Unreleased]` в `## [<версия>]`, добавляет туда строки из `changelog.d/`, удаляет фрагменты и меняет `protocol/version.json`. Существующие записи `[Unreleased]` остаются до этого релиза. После merge в `main` workflow `release` создаёт тег `v<версия>` и GitHub Release на merge commit. Если в версии есть `-`, Release публикуется как pre-release. Ручной тег и перенос тега не используются.
 
 ## Работа без серверной защиты
 
