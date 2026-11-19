@@ -16,10 +16,14 @@ missing or contradicts AGENTS.md/ADR — STOP and list the gaps; do not guess.
 
 ## Steps
 
-0. **Start point.** Tasks run one after another in the main checkout. A parallel
-   task is a separate clone `../<repo>-<cxx>` with one Cursor window on that
-   clone; run the rest of this step inside the clone. In the main checkout,
-   do not clone.
+0. **Start point.** Tasks run one after another in the main checkout. The brief
+   field «Рабочий каталог» is optional. Absent or `основной` means this
+   checkout; a missing field is not a STOP. A value `клон ../<repo>-<cxx>`
+   is a separate clone with one Cursor window on that clone. Then Cursor, in
+   this same session, runs `git clone <origin-url> ../<repo>-<cxx>`, opens a
+   window with `cursor` on that path, and continues this step in the clone.
+   If that path already exists, or the window did not open — STOP. The main
+   checkout stays unchanged.
    `git status` must be clean, else STOP. `git fetch origin`.
    `git ls-remote --heads origin <branch>` must be empty, else STOP: the task
    branch exists in only one clone. Then `git switch -c <branch> origin/main`.
@@ -86,6 +90,7 @@ Apply the listed fixes, then continue from step 3 without stopping. A line
 Задача: Issue #<N> «<заголовок>». Refs #<N>[, #<M>]. Тип: <docs-only|code|hook>.
 По скиллу task-start.
 Ветка: <type/name>
+Рабочий каталог: основной | клон ../<repo>-<cxx>
 Основание: <Issue/комментарий ID, дата>
 Blob: <path> = <sha> [; …] | нет
 Образец: <commit/file> | нет
@@ -96,5 +101,7 @@ task-card: <СТОП|продолжить>
 Проверки сверх стандарта: <…> | нет
 Коммит: «<сообщение>»
 ```
+
+«Рабочий каталог» may be omitted. Omission means the main checkout and is not a STOP.
 
 Never hardcode a past Issue number, SHA or blob into this skill.
