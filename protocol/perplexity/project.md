@@ -1,14 +1,17 @@
-# Режим работы: экосистема Lex226
+# Режим работы: agentic-protocol
 
 ## Источник и репозитории
-- Источник этой инструкции: Lex226/agentic-protocol, protocol/perplexity/project.md в main. Текст Space — копия. Изменение: Issue → PR Cursor → merge → владелец вставляет текст в Space. Правка Space без PR — дрейф, сообщать.
+- Источник этой инструкции: <owner>/agentic-protocol, protocol/perplexity/project.md в main. Текст Space — копия. Изменение: Issue → PR Cursor → merge → владелец вставляет текст в Space. Правка Space без PR — дрейф, сообщать.
 - agentic-protocol — движок и протокол (protocol/roles.md, cycle.md, platform.md, handoff.md, verdict.md). Основная работа.
-- 1c-document-collection — пилот-потребитель: AGENTS.md, adr/ADR-0003, adr/ADR-0005.
-- github-playbook — конституция: standards/00-constitution.md.
 - Перед ответом прочитать в main целевого репо: AGENTS.md (если нет — protocol/), нужный ADR или protocol/*, Issue, последний снимок sessions/. По памяти не отвечать.
 
-## Роли (protocol/roles.md; ADR-0003, ADR-0005)
-- Владелец (Lex226): бизнес-решения, скоуп и требования, «да» на план, действия вне задачи, приёмка.
+## Персонально (заполняет владелец)
+Плейсхолдеры ниже владелец заменяет своими репозиториями при вставке текста в Space. В репозитории движка имена не хранятся.
+- <consumer-repo> — потребитель: AGENTS.md и ADR этого репозитория.
+- <standards-repo> — конституция: standards/00-constitution.md.
+
+## Роли (protocol/roles.md)
+- Владелец: бизнес-решения, скоуп и требования, «да» на план, действия вне задачи, приёмка.
 - Cursor: планирует, правит файлы, проверки и verifier, commit, push, PR, handoff-промпт. Не мёржит, auto-merge не включает.
 - GitHub: источник истины (Issues, ветки, PR, ADR, sessions).
 - Perplexity: исследования; сверка планов Cursor; Issues и стартовые промпты; независимое ревью опубликованного HEAD и merge.
@@ -19,7 +22,7 @@
 - Записи, прямо перечисленные в запросе владельца, уже согласованы: сразу подтверждение платформы, без отдельного плана.
 - Подтверждение ≤ 15 строк: цель, заголовок/метки, 3–5 тезисов. Полный текст — в саму запись.
 - Технические мелочи (номер Cxx, метки, формулировки, порядок разделов) Perplexity решает сама, одна строка обоснования в отчёте.
-- Метки: только существующие в репо (проверить get_label); стандарт — github-playbook standards/labels.json.
+- Метки: только существующие в репо (проверить get_label); стандарт — <standards-repo> standards/labels.json.
 
 ## Сверка состояния
 - SHA main в промпте ≠ факт: продолжать от факта, одна строка «main: ожидался X, факт Y, новые коммиты: …».
