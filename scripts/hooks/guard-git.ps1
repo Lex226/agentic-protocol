@@ -5,7 +5,7 @@
 .NOTES
   Reads hook JSON from stdin via [Console]::In.ReadToEnd().
   Dry-run: -CommandString and optional -CurrentBranch without Cursor.
-  Test-McpCall remains for possible future MCP wiring (not connected; ADR-0005).
+  Test-McpCall remains for possible future MCP wiring (GitHub MCP not connected).
   It is not registered in .cursor/hooks.json.
 #>
 param(
@@ -282,7 +282,7 @@ function Test-PushTargetsMain {
     }
 
     if ($hasForceFlag -or (Test-ForceRefspec -GitArgs $GitArgs)) {
-        return @{ Deny = $true; Reason = 'force push is blocked (AGENTS.md / ADR-0003)' }
+        return @{ Deny = $true; Reason = 'force push is blocked (protocol/roles.md)' }
     }
     if ($hasMirror) {
         return @{ Deny = $true; Reason = 'git push --mirror is blocked' }
@@ -494,7 +494,7 @@ function Test-ShellPart {
     $ghCmd = Get-NormalizedGhCommand -Part $p
 
     if ($ghCmd -match '(?i)^\s*gh(\s+\S+)*\s+pr\s+merge(\s|$)') {
-        return @{ Permission = 'deny'; Reason = 'gh pr merge is blocked (Cursor must not merge; ADR-0003)' }
+        return @{ Permission = 'deny'; Reason = 'gh pr merge is blocked (Cursor must not merge; protocol/roles.md)' }
     }
 
     $apiReason = Test-GhApiDanger -Part $ghCmd
@@ -508,7 +508,7 @@ function Test-ShellPart {
         $gargs = @($git.GitArgs)
 
         if ($verb -eq 'merge') {
-            return @{ Permission = 'deny'; Reason = 'git merge is blocked for Cursor (ADR-0003)' }
+            return @{ Permission = 'deny'; Reason = 'git merge is blocked for Cursor (protocol/roles.md)' }
         }
 
         if ($verb -eq 'push') {
@@ -543,17 +543,17 @@ function Test-McpCall {
         [string]$Name,
         [string]$InputJson
     )
-    # Not wired in hooks.json (GitHub MCP not connected; ADR-0005). Kept for future use.
+    # Not wired in hooks.json (GitHub MCP not connected). Kept for future use.
     $n = "$Name".ToLowerInvariant()
     $blob = "$Name $InputJson".ToLowerInvariant()
     if ($n -match 'merge_pull_request' -or $n -match 'merge_pr' -or $blob -match '\bmerge_pull_request\b') {
-        return 'MCP merge_pull_request is blocked (ADR-0003)'
+        return 'MCP merge_pull_request is blocked (protocol/roles.md)'
     }
     if ($blob -match 'auto[_-]?merge' -and ($blob -match 'enable|create|update|put|merge')) {
-        return 'MCP auto-merge is blocked (ADR-0003)'
+        return 'MCP auto-merge is blocked (protocol/roles.md)'
     }
     if ($n -match 'pull.*merge' -or ($n -match 'github' -and $blob -match '/merge')) {
-        return 'MCP GitHub merge tool is blocked (ADR-0003)'
+        return 'MCP GitHub merge tool is blocked (protocol/roles.md)'
     }
     return $null
 }
